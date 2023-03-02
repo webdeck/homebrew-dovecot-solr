@@ -1,14 +1,20 @@
 class DovecotSolr < Formula
   desc "IMAP/POP3 server with solr"
   homepage "https://dovecot.org/"
-  url "https://raw.githubusercontent.com/webdeck/dovecot-solr/v2.3.19/dovecot-solr-2.3.19.tar.gz"
-  sha256 "938507cf11fafd54ed4c3706f00af4b5f40e1e8b82040ffeed79f4ee52ca90ff"
+  url "https://dovecot.org/releases/2.3/dovecot-2.3.20.tar.gz"
+  sha256 "caa832eb968148abdf35ee9d0f534b779fa732c0ce4a913d9ab8c3469b218552"
   license all_of: ["BSD-3-Clause", "LGPL-2.1-or-later", "MIT", "Unicode-DFS-2016", :public_domain]
 
-  depends_on "openssl@1.1"
+  livecheck do
+    url "https://www.dovecot.org/download/"
+    regex(/href=.*?dovecot[._-]v?(\d+(?:\.\d+)+)\.t/i)
+  end
+
+  depends_on "openssl@3"
   depends_on "solr"
 
   uses_from_macos "bzip2"
+  uses_from_macos "libxcrypt"
   uses_from_macos "sqlite"
 
   on_linux do
@@ -17,8 +23,8 @@ class DovecotSolr < Formula
   end
 
   resource "pigeonhole" do
-    url "https://pigeonhole.dovecot.org/releases/2.3/dovecot-2.3-pigeonhole-0.5.18.tar.gz"
-    sha256 "a6d828f8d6f2decba5105343ece5c7a65245bd94e46a8ae4432a6d97543108a5"
+    url "https://pigeonhole.dovecot.org/releases/2.3/dovecot-2.3-pigeonhole-0.5.20.tar.gz"
+    sha256 "ae32bd4870ea2c1328ae09ba206e9ec12128046d6afca52fbbc9ef7f75617c98"
 
     # Fix -flat_namespace being used on Big Sur and later.
     patch do
@@ -51,6 +57,7 @@ class DovecotSolr < Formula
       --with-sqlite
       --with-ssl=openssl
       --with-zlib
+      --without-icu
       --with-solr
     ]
 
@@ -77,10 +84,9 @@ class DovecotSolr < Formula
     EOS
   end
 
-  plist_options startup: true
-
   service do
     run [opt_sbin/"dovecot", "-F"]
+    require_root true
     environment_variables PATH: std_service_path_env
     error_log_path var/"log/dovecot/dovecot.log"
     log_path var/"log/dovecot/dovecot.log"
